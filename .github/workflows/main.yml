@@ -1,14 +1,13 @@
-
 name: Java CI with Maven (Build jshERP)
 
 on:
   push:
-    branches: [ "master" ] # 当 master 分支有变动时触发
-  workflow_dispatch: # 允许手动触发打包
+    branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # 使用 GitHub 提供的 Ubuntu 虚拟机
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -20,17 +19,20 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
+    # 关键修复：进入 jshERP-boot 目录执行 maven
     - name: Build with Maven
       run: mvn clean package -Dmaven.test.skip=true
+      working-directory: ./jshERP-boot
 
-    - name: Organize Files # 整理成品文件夹
+    # 复制打包好的文件到 release
+    - name: Organize Files
       run: |
-        mkdir release
-        # 这里的路径根据 jshERP 的多模块结构调整，通常在 jshERP-bin 的 target 下
-        cp -r jshERP-bin/target/jshERP-bin/jshERP-bin/* release/
+        mkdir -p release
+        cp -r jshERP-boot/target/* release/
 
-    - name: Upload Artifact # 将打包好的文件上传到 GitHub
+    # 上传构建产物
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: jshERP-3.5-Release
+        name: jshERP-Release
         path: release/
