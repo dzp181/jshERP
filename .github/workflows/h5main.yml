@@ -18,13 +18,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '16'
-          # 删除了 cache 相关配置，避免因找不到文件而报错
 
       - name: Install and Build
         working-directory: ./jshERP-web
         run: |
-          # 使用 --no-package-lock 确保安装过程不依赖 lock 文件
-          npm install --no-package-lock
+          # 核心修复：添加 --legacy-peer-deps
+          npm install --legacy-peer-deps --registry=https://registry.npmmirror.com
           
           export NODE_OPTIONS=--max-old-space-size=4096
           npm run build
