@@ -1,0 +1,38 @@
+name: Build Frontend
+
+on:
+  push:
+    branches: [ "master" ] # 或者 main
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16' # 根据项目要求选择版本，建议 14 或 16
+          cache: 'npm'
+          cache-dependency-path: jshERP-web/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          cd jshERP-web
+          npm install
+
+      - name: Build Project
+        run: |
+          cd jshERP-web
+          npm run build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: jshERP-web/dist/ # 打包生成的静态文件路径
