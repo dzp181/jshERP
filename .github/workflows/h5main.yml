@@ -18,18 +18,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '16'
-          # 核心修复：添加这行，告诉它去哪个文件夹找 lock 文件
-          cache: 'npm'
-          cache-dependency-path: 'jshERP-web/package-lock.json'
+          # 删除了 cache 相关配置，避免因找不到文件而报错
 
       - name: Install and Build
-        # 强制在这个目录下运行后续所有命令
         working-directory: ./jshERP-web
         run: |
-          # 1. 安装依赖
-          npm install
+          # 使用 --no-package-lock 确保安装过程不依赖 lock 文件
+          npm install --no-package-lock
           
-          # 2. 增加内存限制并执行打包
           export NODE_OPTIONS=--max-old-space-size=4096
           npm run build
 
