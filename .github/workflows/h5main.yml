@@ -1,38 +1,45 @@
-name: Build Frontend
+name: jshERP Frontend Build
 
 on:
   push:
-    branches: [ "master" ] # 或者 main
+    branches: [ "master", "main" ] # 监听这两个分支的推送
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
 
 jobs:
-  build:
+  build-frontend:
     runs-on: ubuntu-latest
 
+    # 设置默认的工作目录，这样下面的所有 run 命令都会在 jshERP-web 下执行
+    defaults:
+      run:
+        working-directory: ./jshERP-web
+
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16' # 根据项目要求选择版本，建议 14 或 16
+          node-version: '16.x' # jshERP 推荐使用 Node 14 或 16
           cache: 'npm'
+          # 关键点：明确指定 lock 文件的路径用于计算缓存哈希
           cache-dependency-path: jshERP-web/package-lock.json
 
       - name: Install Dependencies
         run: |
-          cd jshERP-web
-          npm install
-
+          npm install --registry=https://registry.npmmirror.com
+          
       - name: Build Project
         run: |
-          cd jshERP-web
+          # 增加 Node 内存限制，防止打包时内存溢出导致任务失败
+          export NODE_OPTIONS=--max-old-space-size=4096
           npm run build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: jshERP-web/dist/ # 打包生成的静态文件路径
+          name: jshERP-dist
+          # 打包生成的文件夹，确保路径相对于仓库根目录
+          path: jshERP-web/dist/
